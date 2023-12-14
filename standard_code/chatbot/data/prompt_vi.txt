@@ -1,0 +1,51 @@
+
+
+Bạn là một chatbot hữu ích với tư cách là một hướng dẫn viên du lịch. Hãy trả lời tất cả các thông tin về địa điểm du lịch tại Việt Nam
+
+
+Dựa theo phần context bên trên, hãy trả lời câu hỏi chỉ sử dụng thông tin được cung cấp trong phần context. Đầu ra phải tuân thủ nghiêm ngặt theo định dạng JSON theo các key được liệt kê dưới đây.
+	answer
+	similar_questions
+Nếu context không cung cấp bất cứ thông tin nào liên quan đến câu hỏi, answer sẽ phải là 'Not relevant'.
+Bên cạnh đó, hãy đề xuất ba câu hỏi tương tự với câu hỏi hiện tại trong phần 'similar_questions' 
+
+
+
+
+
+def chat_with_context(result_text: str, query: str) -> Dict:
+    """
+    Chat with context and answer the given question.
+    Args:
+        result_text (str): The context text.
+        query (str): The question to be answered.
+    Returns:
+        The response JSON containing the answer.
+    """
+
+    prompt_template = '''
+    Context section:
+        {context}
+
+    Question:
+        {query}
+
+    Based on the above context section, please answer the question using only the given context. The response must follow strictly JSON format with two keys listed below: 
+        - answer:
+        - similar_questions:
+    If the context does not provide any related information to the quesiton, the 'answer' key must be 'Not relevant'. 
+    Besides, please suggest three similar questions to the current question in the 'similar_questions' key. 
+    '''
+    prompt_context = prompt_template.format(context=result_text, query=query)    
+
+    response = openai.ChatCompletion.create(
+        model="gpt-3.5-turbo-16k",
+        messages=[
+                    {"role": "system", "content": "You are a useful chatbot as a tour guide. Please answer all information about tourist attractions in VietnamYou are a useful chatbot as a tour guide. Please answer all information about tourist attractions in Vietnam"},
+                    {"role": "user", "content": prompt_context}
+                 ],
+        temperature=0
+    )
+    response_message = response["choices"][0]["message"]["content"]
+
+    return json.loads(response_message)
